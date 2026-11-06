@@ -16,6 +16,8 @@ import android.widget.Toast
 class MainActivity : Activity() {
     private lateinit var lessons: MutableList<Lesson>
     private lateinit var listBox: LinearLayout
+    private val dayViews = mutableListOf<TextView>()
+    private var day = Store.today()
     private var start = 510
     private var end = 555
 
@@ -42,6 +44,13 @@ class MainActivity : Activity() {
         addView(v, LinearLayout.LayoutParams(w, LinearLayout.LayoutParams.WRAP_CONTENT, weight).apply { topMargin = dp(top) })
     }
 
+    private fun styleDays() {
+        dayViews.forEachIndexed { i, v ->
+            v.background = shape(if (i == day) RED else CARD, 12)
+            v.setTextColor(if (i == day) 0xFF2A0F10.toInt() else ROSE)
+        }
+    }
+
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
         window.statusBarColor = INK
@@ -53,13 +62,28 @@ class MainActivity : Activity() {
             setPadding(dp(20), dp(24), dp(20), dp(32))
         }
         root.put(text("Урок", 28f, ROSE, true))
-        root.put(text("Расписание на каждый день. Виджет покажет текущий и следующий урок.", 14f, MUTED), 4)
+        root.put(text("Расписание по дням недели. Виджет покажет текущий и следующий урок.", 14f, MUTED), 4)
+
+        val daysRow = LinearLayout(this)
+        DAYS.forEachIndexed { i, n ->
+            val tv = text(n, 14f, ROSE, true).apply {
+                gravity = Gravity.CENTER
+                setPadding(0, dp(10), 0, dp(10))
+                setOnClickListener { day = i; styleDays(); render() }
+            }
+            dayViews.add(tv)
+            daysRow.addView(tv, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                if (i > 0) marginStart = dp(4)
+            })
+        }
+        root.put(daysRow, 16)
+        styleDays()
 
         listBox = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; background = shape(WINE, 22)
             setPadding(dp(12), dp(8), dp(12), dp(8))
         }
-        root.put(listBox, 18)
+        root.put(listBox, 12)
 
         val name = field("Предмет, например Физика")
         val room = field("Кабинет (необязательно)")
@@ -83,8 +107,8 @@ class MainActivity : Activity() {
             if (n.isEmpty() || end <= start) {
                 Toast.makeText(this, "Введите предмет и проверьте время", Toast.LENGTH_SHORT).show()
             } else {
-                lessons.add(Lesson(start, end, n, room.text.toString().trim()))
-                lessons.sortBy { it.start }
+                lessons.add(Lesson(day, start, end, n, room.text.toString().trim()))
+                lessons.sortWith(compareBy({ it.day }, { it.start }))
                 name.text.clear(); room.text.clear()
                 commit()
             }
@@ -102,12 +126,16 @@ class MainActivity : Activity() {
 
     private fun render() {
         listBox.removeAllViews()
-        if (lessons.isEmpty()) listBox.put(text("Пока пусто. Добавьте первый урок ниже.", 14f, MUTED))
+        val shown = lessons.filter { it.day == day }.sortedBy { it.start }
+        if (shown.isEmpty()) listBox.put(text("В этот день уроков нет. Добавьте первый ниже.", 14f, MUTED).apply {
+            setPadding(dp(8), dp(10), dp(8), dp(10))
+        })
         val t = Store.nowMin()
-        lessons.forEachIndexed { i, l ->
+        val isToday = day == Store.today()
+        shown.forEach { l ->
             val row = LinearLayout(this).apply {
                 gravity = Gravity.CENTER_VERTICAL; setPadding(dp(8), dp(10), dp(4), dp(10))
-                if (l.start <= t && t < l.end) background = shape(0x33E4605C, 14)
+                if (isToday && l.start <= t && t < l.end) background = shape(0x33E4605C, 14)
             }
             row.addView(text("${Store.fmt(l.start)}\n${Store.fmt(l.end)}", 13f, 0xFFF08A85.toInt(), true).apply {
                 minWidth = dp(60)
@@ -118,7 +146,7 @@ class MainActivity : Activity() {
             row.put(col, 0, 1f)
             row.addView(text("×", 24f, MUTED).apply {
                 setPadding(dp(14), 0, dp(10), 0)
-                setOnClickListener { lessons.removeAt(i); commit() }
+                setOnClickListener { lessons.remove(l); commit() }
             })
             listBox.put(row)
         }

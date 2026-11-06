@@ -27,28 +27,43 @@ class LessonWidget : AppWidgetProvider() {
 
         private fun build(c: Context): RemoteViews {
             val v = RemoteViews(c.packageName, R.layout.widget)
-            val l = Store.load(c)
+            val all = Store.load(c)
+            val d = Store.today()
             val t = Store.nowMin()
+            val l = all.filter { it.day == d }.sortedBy { it.start }
             val cur = l.firstOrNull { it.start <= t && t < it.end }
             val nxt = l.firstOrNull { it.start > t }
-            val room = { x: Lesson -> if (x.room.isBlank()) "" else " · каб. ${x.room}" }
 
-            val tom = if (nxt == null) l.firstOrNull() else null
+            // Если сегодня уроков больше нет, ищем ближайший урок в следующие дни.
+            var later: Lesson? = null
+            var laterWhen = ""
+            if (nxt == null) {
+                for (k in 1..7) {
+                    val dd = (d + k) % 7
+                    val f = all.filter { it.day == dd }.minByOrNull { it.start }
+                    if (f != null) {
+                        later = f
+                        laterWhen = if (k == 1) "завтра" else DAYS[dd]
+                        break
+                    }
+                }
+            }
+            val room = { x: Lesson -> if (x.room.isBlank()) "" else " · каб. ${x.room}" }
 
             v.setTextViewText(
                 R.id.cur_name,
                 cur?.name ?: when {
                     nxt != null -> "Перемена"
-                    tom != null -> "Уроки закончились"
-                    else -> "Уроков нет"
+                    l.isNotEmpty() -> "Уроки закончились"
+                    else -> "Сегодня уроков нет"
                 }
             )
             v.setTextViewText(R.id.cur_time, cur?.let { "до ${Store.fmt(it.end)}${room(it)}" } ?: "")
-            v.setTextViewText(R.id.nxt_name, nxt?.name ?: tom?.name ?: "Добавьте уроки в приложении")
+            v.setTextViewText(R.id.nxt_name, nxt?.name ?: later?.name ?: "Добавьте уроки в приложении")
             v.setTextViewText(
                 R.id.nxt_time,
                 nxt?.let { "в ${Store.fmt(it.start)}${room(it)}" }
-                    ?: tom?.let { "завтра в ${Store.fmt(it.start)}${room(it)}" } ?: ""
+                    ?: later?.let { "$laterWhen в ${Store.fmt(it.start)}${room(it)}" } ?: ""
             )
 
             val open = PendingIntent.getActivity(
@@ -58,10 +73,12 @@ class LessonWidget : AppWidgetProvider() {
             return v
         }
 
-        // Будим виджет ровно в момент начала или конца ближайшего урока.
+        // Будим виджет в момент начала или конца ближайшего урока и в полночь (смена дня).
         private fun schedule(c: Context) {
             val t = Store.nowMin()
-            val points = Store.load(c).flatMap { listOf(it.start, it.end) }.filter { it > t } + 1440
+            val d = Store.today()
+            val points = Store.load(c).filter { it.day == d }
+                .flatMap { listOf(it.start, it.end) }.filter { it > t } + 1440
             val at = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
                 set(Calendar.SECOND, 5); set(Calendar.MILLISECOND, 0)

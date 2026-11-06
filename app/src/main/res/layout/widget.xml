@@ -33,4 +33,4 @@
                 android:textSize="12sp" android:textColor="#B39A9B" android:maxLines="1"/>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout> 
+</LinearLayout>

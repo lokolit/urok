@@ -5,7 +5,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Calendar
 
-data class Lesson(val start: Int, val end: Int, val name: String, val room: String)
+// day: 0 = Пн ... 6 = Вс
+data class Lesson(val day: Int, val start: Int, val end: Int, val name: String, val room: String)
 
 val INK = 0xFF171012.toInt()
 val WINE = 0xFF241519.toInt()
@@ -13,6 +14,8 @@ val CARD = 0xFF2D1B20.toInt()
 val ROSE = 0xFFF1DEDB.toInt()
 val MUTED = 0xFFB39A9B.toInt()
 val RED = 0xFFE4605C.toInt()
+
+val DAYS = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
 object Store {
     fun fmt(m: Int) = "%02d:%02d".format(m / 60, m % 60)
@@ -22,26 +25,22 @@ object Store {
         return c.get(Calendar.HOUR_OF_DAY) * 60 + c.get(Calendar.MINUTE)
     }
 
-    private fun defaults() = mutableListOf(
-        Lesson(510, 555, "Математика", "214"),
-        Lesson(565, 610, "Русский язык", "107"),
-        Lesson(630, 675, "Физика", "305"),
-        Lesson(685, 730, "История", "112"),
-        Lesson(750, 795, "Английский", "208")
-    )
+    fun today(): Int = (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + 5) % 7
 
     fun load(c: Context): MutableList<Lesson> {
-        val s = c.getSharedPreferences("urok", 0).getString("lessons", null) ?: return defaults()
+        val s = c.getSharedPreferences("urok", 0).getString("lessons2", null) ?: return mutableListOf()
         val a = JSONArray(s)
         return MutableList(a.length()) {
             val o = a.getJSONObject(it)
-            Lesson(o.getInt("s"), o.getInt("e"), o.getString("n"), o.getString("r"))
-        }.sortedBy { it.start }.toMutableList()
+            Lesson(o.getInt("d"), o.getInt("s"), o.getInt("e"), o.getString("n"), o.getString("r"))
+        }.sortedWith(compareBy({ it.day }, { it.start })).toMutableList()
     }
 
     fun save(c: Context, l: List<Lesson>) {
         val a = JSONArray()
-        l.forEach { a.put(JSONObject().put("s", it.start).put("e", it.end).put("n", it.name).put("r", it.room)) }
-        c.getSharedPreferences("urok", 0).edit().putString("lessons", a.toString()).apply()
+        l.forEach {
+            a.put(JSONObject().put("d", it.day).put("s", it.start).put("e", it.end).put("n", it.name).put("r", it.room))
+        }
+        c.getSharedPreferences("urok", 0).edit().putString("lessons2", a.toString()).apply()
     }
 }
