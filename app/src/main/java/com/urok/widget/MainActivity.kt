@@ -68,10 +68,10 @@ class MainActivity : Activity() {
 
         val times = LinearLayout(this)
         val bs = button("Начало ${Store.fmt(start)}", CARD, ROSE) { btn ->
-            TimePickerDialog(this, { _, h, m -> start = h * 60 + m; btn.text = "Начало ${Store.fmt(start)}" }, start / 60, start % 60, true).show()
+            TimePickerDialog(this, R.style.AppDialog, { _, h, m -> start = h * 60 + m; btn.text = "Начало ${Store.fmt(start)}" }, start / 60, start % 60, true).show()
         }
         val be = button("Конец ${Store.fmt(end)}", CARD, ROSE) { btn ->
-            TimePickerDialog(this, { _, h, m -> end = h * 60 + m; btn.text = "Конец ${Store.fmt(end)}" }, end / 60, end % 60, true).show()
+            TimePickerDialog(this, R.style.AppDialog, { _, h, m -> end = h * 60 + m; btn.text = "Конец ${Store.fmt(end)}" }, end / 60, end % 60, true).show()
         }
         times.put(bs, 0, 1f)
         times.addView(View(this), dp(8), 1)

@@ -33,10 +33,23 @@ class LessonWidget : AppWidgetProvider() {
             val nxt = l.firstOrNull { it.start > t }
             val room = { x: Lesson -> if (x.room.isBlank()) "" else " · каб. ${x.room}" }
 
-            v.setTextViewText(R.id.cur_name, cur?.name ?: if (nxt == null) "Уроков нет" else "Перемена")
+            val tom = if (nxt == null) l.firstOrNull() else null
+
+            v.setTextViewText(
+                R.id.cur_name,
+                cur?.name ?: when {
+                    nxt != null -> "Перемена"
+                    tom != null -> "Уроки закончились"
+                    else -> "Уроков нет"
+                }
+            )
             v.setTextViewText(R.id.cur_time, cur?.let { "до ${Store.fmt(it.end)}${room(it)}" } ?: "")
-            v.setTextViewText(R.id.nxt_name, nxt?.name ?: "На сегодня всё")
-            v.setTextViewText(R.id.nxt_time, nxt?.let { "в ${Store.fmt(it.start)}${room(it)}" } ?: "")
+            v.setTextViewText(R.id.nxt_name, nxt?.name ?: tom?.name ?: "Добавьте уроки в приложении")
+            v.setTextViewText(
+                R.id.nxt_time,
+                nxt?.let { "в ${Store.fmt(it.start)}${room(it)}" }
+                    ?: tom?.let { "завтра в ${Store.fmt(it.start)}${room(it)}" } ?: ""
+            )
 
             val open = PendingIntent.getActivity(
                 c, 0, Intent(c, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE

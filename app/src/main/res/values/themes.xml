@@ -1,0 +1,16 @@
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:colorAccent">#E4605C</item>
+        <item name="android:colorPrimary">#E4605C</item>
+        <item name="android:colorControlActivated">#E4605C</item>
+        <item name="android:textColorHighlight">#66E4605C</item>
+    </style>
+    <style name="AppDialog" parent="@android:style/Theme.DeviceDefault.Dialog.Alert">
+        <item name="android:colorAccent">#E4605C</item>
+        <item name="android:colorPrimary">#E4605C</item>
+        <item name="android:colorControlActivated">#E4605C</item>
+        <item name="android:colorBackground">#2D1B20</item>
+        <item name="android:textColorPrimary">#F1DEDB</item>
+        <item name="android:textColorSecondary">#B39A9B</item>
+    </style>
+</resources>
