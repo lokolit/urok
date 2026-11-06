@@ -7,7 +7,7 @@
         android:text="Сейчас" android:textSize="12sp" android:textColor="#B39A9B"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal">
-        <View android:layout_width="8dp" android:layout_height="40dp" android:layout_marginEnd="12dp"
+        <FrameLayout android:layout_width="8dp" android:layout_height="40dp" android:layout_marginEnd="12dp"
             android:background="@drawable/bar_red"/>
         <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -22,7 +22,7 @@
         android:layout_marginTop="14dp" android:text="Дальше" android:textSize="12sp" android:textColor="#B39A9B"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal">
-        <View android:layout_width="8dp" android:layout_height="28dp" android:layout_marginEnd="12dp"
+        <FrameLayout android:layout_width="8dp" android:layout_height="28dp" android:layout_marginEnd="12dp"
             android:background="@drawable/bar_dim"/>
         <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -33,4 +33,4 @@
                 android:textSize="12sp" android:textColor="#B39A9B" android:maxLines="1"/>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</LinearLayout> 
